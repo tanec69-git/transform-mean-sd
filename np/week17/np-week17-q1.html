@@ -15,7 +15,8 @@
             startup: {
                 pageReady: () => {
                     return MathJax.startup.defaultPageReady().then(() => {
-                        generateNewQuestion(); // Generate the first question when MathJax is ready
+                        // Initialize with default values from the image
+                        renderContent(0.30, 0.40, 0.55);
                     });
                 }
             }
@@ -85,12 +86,16 @@
         #generate-btn:hover {
             background-color: #27ae60;
         }
+        .sub-question {
+            margin-left: 20px;
+            margin-bottom: 10px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>Probability Practice</h1>
+    <h1>Probability Practice (Events & Independence)</h1>
     
     <div class="question-section" id="question-content">
         <!-- Question will be injected here -->
@@ -174,17 +179,20 @@
         const pEandNotC = round(pE - pEandC, 4);
         const pEGivenNotC = round(pEandNotC / pNotC, 4);
         const pE_times_pC = round(pE * pC, 4);
-        const isIndependent = (pEandC === pE_times_pC);
+        const isIndependent = (Math.abs(pEandC - pE_times_pC) < 0.0001);
 
-        // Build Question HTML
+        // Build Question HTML exactly matching image_50c83c.png structure
         const questionHTML = `
-            <p>Q. Let $E$ be the event that the student studies Engineering and $C$ be the event that the student participates in a sports club.</p>
+            <p>Q1. Let E be the event that the student studies Engineering and C be the event that the student participates in a sports club.</p>
             <p>In a college, ${pE_pct}% of students are enrolled in the Engineering programme, and ${pC_pct}% of students participate in at least one sports club. Among Engineering students, ${pCGivenE_pct}% participate in a sports club i.e. $P(C|E) = ${pCGivenE.toFixed(2)}$</p>
-            <p>A student is randomly selected. Find:</p>
-            <p>(a) the probability that the student is in Engineering and participates in a sports club</p>
-            <p>(b) $P(E \\cup C)$</p>
-            <p>(c) the probability that the student is in Engineering given that the student is not in a sports club.</p>
-            <p>(d) Determine whether $E$ and $C$ are independent.</p>
+            <p>A student is randomly selected.</p>
+            <p>Find</p>
+            <div class="sub-question">
+                <p>(a) the probability that the student is in Engineering and participate in a sports club</p>
+                <p>(b) $P(E \\cup C)$</p>
+                <p>(c) the probability that the student is in Engineering given that the student is not in a sports club.</p>
+                <p>(d) Determine whether $E$ and $C$ are independent.</p>
+            </div>
         `;
 
         // Build Answer HTML
@@ -192,7 +200,7 @@
             <h3>Solutions:</h3>
             <p><strong>Given:</strong> $P(E) = ${pE.toFixed(2)}$, $P(C) = ${pC.toFixed(2)}$, $P(C|E) = ${pCGivenE.toFixed(2)}$</p>
             
-            <p><strong>(a)</strong> Find $P(E \\cap C)$:<br>
+            <p><strong>(a)</strong> Probability student is in Engineering and participates in a sports club ($P(E \\cap C)$):<br>
             $$P(E \\cap C) = P(E) \\times P(C|E)$$
             $$P(E \\cap C) = ${pE.toFixed(2)} \\times ${pCGivenE.toFixed(2)} = \\mathbf{${pEandC}}$$</p>
 
@@ -200,13 +208,13 @@
             $$P(E \\cup C) = P(E) + P(C) - P(E \\cap C)$$
             $$P(E \\cup C) = ${pE.toFixed(2)} + ${pC.toFixed(2)} - ${pEandC} = \\mathbf{${pEorC}}$$</p>
 
-            <p><strong>(c)</strong> Find $P(E|C')$:<br>
+            <p><strong>(c)</strong> Find $P(E|C')$ (Probability in Engineering given not in a sports club):<br>
             First, find $P(C') = 1 - P(C) = 1 - ${pC.toFixed(2)} = ${pNotC}$<br>
             Next, find $P(E \\cap C') = P(E) - P(E \\cap C) = ${pE.toFixed(2)} - ${pEandC} = ${pEandNotC}$<br>
             $$P(E|C') = \\frac{P(E \\cap C')}{P(C')} = \\frac{${pEandNotC}}{${pNotC}} = \\mathbf{${pEGivenNotC}}$$</p>
 
             <p><strong>(d)</strong> Independence Check:<br>
-            Events are independent if $P(E \\cap C) = P(E) \\times P(C)$.<br>
+            Events $E$ and $C$ are independent if $P(E \\cap C) = P(E) \\times P(C)$.<br>
             $P(E \\cap C) = ${pEandC}$<br>
             $P(E) \\times P(C) = ${pE.toFixed(2)} \\times ${pC.toFixed(2)} = ${pE_times_pC}$<br>
             Since $${pEandC} ${isIndependent ? '=' : '\\neq'} ${pE_times_pC}$, the events $E$ and $C$ are <strong>${isIndependent ? 'independent' : 'not independent'}</strong>.</p>
