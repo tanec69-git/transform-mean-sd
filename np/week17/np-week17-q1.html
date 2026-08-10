@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Probability Question Generator</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        generateNewQuestion(); // Generate the first question when MathJax is ready
+                    });
+                }
+            }
+        };
+    </script>
+    <!-- MathJax Script (No Polyfill) -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .question-section {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        .answer-section {
+            display: none;
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #toggle-btn {
+            background-color: #3498db;
+        }
+        #toggle-btn:hover {
+            background-color: #2980b9;
+        }
+        #generate-btn {
+            background-color: #2ecc71;
+        }
+        #generate-btn:hover {
+            background-color: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Probability Practice</h1>
+    
+    <div class="question-section" id="question-content">
+        <!-- Question will be injected here -->
+    </div>
+
+    <div class="controls">
+        <button id="toggle-btn" onclick="toggleAnswer()">Show Answer</button>
+        <button id="generate-btn" onclick="generateNewQuestion()">Generate New Question</button>
+    </div>
+
+    <div class="answer-section" id="answer-content">
+        <!-- Answer will be injected here -->
+    </div>
+</div>
+
+<script>
+    // Utility to round numbers cleanly and avoid JS floating point issues
+    function round(value, decimals = 4) {
+        return Number(Math.round(value + 'e' + decimals) + 'e-' + decimals);
+    }
+
+    // Generate random probability multiples (e.g., 0.25, 0.30, etc.)
+    function getRandomProb(min, max, step = 0.05) {
+        const steps = Math.floor((max - min) / step);
+        return round(min + (Math.floor(Math.random() * (steps + 1)) * step), 2);
+    }
+
+    let isAnswerVisible = false;
+
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('answer-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        
+        isAnswerVisible = !isAnswerVisible;
+        
+        if (isAnswerVisible) {
+            answerDiv.style.display = 'block';
+            toggleBtn.textContent = 'Hide Answer';
+        } else {
+            answerDiv.style.display = 'none';
+            toggleBtn.textContent = 'Show Answer';
+        }
+    }
+
+    function generateNewQuestion() {
+        let pE, pC, pCGivenE, pEandC, pEorC;
+        let valid = false;
+
+        // Generate logically sound probabilities
+        while (!valid) {
+            pE = getRandomProb(0.20, 0.60);
+            pC = getRandomProb(0.25, 0.70);
+            pCGivenE = getRandomProb(0.15, 0.85);
+
+            pEandC = round(pE * pCGivenE);
+            pEorC = round(pE + pC - pEandC);
+
+            // Valid conditions: P(E and C) cannot exceed P(C), and P(E or C) cannot exceed 1
+            if (pEandC <= pC && pEandC < pE && pEorC <= 1.0) {
+                valid = true;
+            }
+        }
+
+        // Hide answer section when generating a new question
+        isAnswerVisible = false;
+        document.getElementById('answer-content').style.display = 'none';
+        document.getElementById('toggle-btn').textContent = 'Show Answer';
+
+        renderContent(pE, pC, pCGivenE);
+    }
+
+    function renderContent(pE, pC, pCGivenE) {
+        const pE_pct = Math.round(pE * 100);
+        const pC_pct = Math.round(pC * 100);
+        const pCGivenE_pct = Math.round(pCGivenE * 100);
+
+        // Calculate Answers
+        const pEandC = round(pE * pCGivenE, 4);
+        const pEorC = round(pE + pC - pEandC, 4);
+        const pNotC = round(1 - pC, 4);
+        const pEandNotC = round(pE - pEandC, 4);
+        const pEGivenNotC = round(pEandNotC / pNotC, 4);
+        const pE_times_pC = round(pE * pC, 4);
+        const isIndependent = (pEandC === pE_times_pC);
+
+        // Build Question HTML
+        const questionHTML = `
+            <p>Q. Let $E$ be the event that the student studies Engineering and $C$ be the event that the student participates in a sports club.</p>
+            <p>In a college, ${pE_pct}% of students are enrolled in the Engineering programme, and ${pC_pct}% of students participate in at least one sports club. Among Engineering students, ${pCGivenE_pct}% participate in a sports club i.e. $P(C|E) = ${pCGivenE.toFixed(2)}$</p>
+            <p>A student is randomly selected. Find:</p>
+            <p>(a) the probability that the student is in Engineering and participates in a sports club</p>
+            <p>(b) $P(E \\cup C)$</p>
+            <p>(c) the probability that the student is in Engineering given that the student is not in a sports club.</p>
+            <p>(d) Determine whether $E$ and $C$ are independent.</p>
+        `;
+
+        // Build Answer HTML
+        const answerHTML = `
+            <h3>Solutions:</h3>
+            <p><strong>Given:</strong> $P(E) = ${pE.toFixed(2)}$, $P(C) = ${pC.toFixed(2)}$, $P(C|E) = ${pCGivenE.toFixed(2)}$</p>
+            
+            <p><strong>(a)</strong> Find $P(E \\cap C)$:<br>
+            $$P(E \\cap C) = P(E) \\times P(C|E)$$
+            $$P(E \\cap C) = ${pE.toFixed(2)} \\times ${pCGivenE.toFixed(2)} = \\mathbf{${pEandC}}$$</p>
+
+            <p><strong>(b)</strong> Find $P(E \\cup C)$:<br>
+            $$P(E \\cup C) = P(E) + P(C) - P(E \\cap C)$$
+            $$P(E \\cup C) = ${pE.toFixed(2)} + ${pC.toFixed(2)} - ${pEandC} = \\mathbf{${pEorC}}$$</p>
+
+            <p><strong>(c)</strong> Find $P(E|C')$:<br>
+            First, find $P(C') = 1 - P(C) = 1 - ${pC.toFixed(2)} = ${pNotC}$<br>
+            Next, find $P(E \\cap C') = P(E) - P(E \\cap C) = ${pE.toFixed(2)} - ${pEandC} = ${pEandNotC}$<br>
+            $$P(E|C') = \\frac{P(E \\cap C')}{P(C')} = \\frac{${pEandNotC}}{${pNotC}} = \\mathbf{${pEGivenNotC}}$$</p>
+
+            <p><strong>(d)</strong> Independence Check:<br>
+            Events are independent if $P(E \\cap C) = P(E) \\times P(C)$.<br>
+            $P(E \\cap C) = ${pEandC}$<br>
+            $P(E) \\times P(C) = ${pE.toFixed(2)} \\times ${pC.toFixed(2)} = ${pE_times_pC}$<br>
+            Since $${pEandC} ${isIndependent ? '=' : '\\neq'} ${pE_times_pC}$, the events $E$ and $C$ are <strong>${isIndependent ? 'independent' : 'not independent'}</strong>.</p>
+        `;
+
+        document.getElementById('question-content').innerHTML = questionHTML;
+        document.getElementById('answer-content').innerHTML = answerHTML;
+
+        // Re-render MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch((err) => console.log('MathJax error: ', err.message));
+        }
+    }
+</script>
+
+</body>
+</html>

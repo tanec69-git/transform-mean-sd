@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contingency Table Probability Generator</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        // Initialize with default values from the image
+                        renderContent(70, 40, 30, 60); 
+                    });
+                }
+            }
+        };
+    </script>
+    <!-- MathJax Script (No Polyfill) -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .question-section {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f9f9f9;
+        }
+        .answer-section {
+            display: none;
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #toggle-btn {
+            background-color: #3498db;
+        }
+        #toggle-btn:hover {
+            background-color: #2980b9;
+        }
+        #generate-btn {
+            background-color: #2ecc71;
+        }
+        #generate-btn:hover {
+            background-color: #27ae60;
+        }
+        .sub-question {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Contingency Table Probability Practice</h1>
+    
+    <div class="question-section" id="question-content">
+        <!-- Question will be injected here -->
+    </div>
+
+    <div class="controls">
+        <button id="toggle-btn" onclick="toggleAnswer()">Show Answer</button>
+        <button id="generate-btn" onclick="generateNewQuestion()">Generate New Question</button>
+    </div>
+
+    <div class="answer-section" id="answer-content">
+        <!-- Answer will be injected here -->
+    </div>
+</div>
+
+<script>
+    let isAnswerVisible = false;
+
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('answer-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        
+        isAnswerVisible = !isAnswerVisible;
+        
+        if (isAnswerVisible) {
+            answerDiv.style.display = 'block';
+            toggleBtn.textContent = 'Hide Answer';
+        } else {
+            answerDiv.style.display = 'none';
+            toggleBtn.textContent = 'Show Answer';
+        }
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateNewQuestion() {
+        // Generate random cell values
+        const c_s = getRandomInt(20, 90);      // Campus & Sports
+        const not_c_s = getRandomInt(10, 80);  // Off-campus & Sports
+        const c_not_s = getRandomInt(10, 60);  // Campus & Not Sports
+        const not_c_not_s = getRandomInt(20, 100); // Off-campus & Not Sports
+
+        // Hide answer section when generating a new question
+        isAnswerVisible = false;
+        document.getElementById('answer-content').style.display = 'none';
+        document.getElementById('toggle-btn').textContent = 'Show Answer';
+
+        renderContent(c_s, not_c_s, c_not_s, not_c_not_s);
+    }
+
+    function renderContent(c_s, not_c_s, c_not_s, not_c_not_s) {
+        // Calculate Totals dynamically so math logic is sound
+        const total_c = c_s + c_not_s;
+        const total_not_c = not_c_s + not_c_not_s;
+        const total_s = c_s + not_c_s;
+        const total_not_s = c_not_s + not_c_not_s;
+        const grand_total = total_c + total_not_c;
+
+        // Probabilities
+        const p_c = total_c / grand_total;
+        const p_not_s = total_not_s / grand_total;
+        const p_s = total_s / grand_total;
+        
+        const p_c_and_s = c_s / grand_total;
+        const p_not_c_and_not_s = not_c_not_s / grand_total;
+        const p_s_given_c = c_s / total_c;
+        const p_c_given_s = c_s / total_s;
+
+        const p_c_times_p_s = p_c * p_s;
+        const isIndependent = Math.abs(p_c_and_s - p_c_times_p_s) < 0.0001;
+
+        // Format to 3 decimal places for display
+        const f = (num) => num.toFixed(3);
+
+        // Build Question HTML
+        const questionHTML = `
+            <p>Q2. A university surveyed ${grand_total} students regarding whether they live in campus accommodation (C) or participate in sports (S)</p>
+            <p>A student is selected at random.</p>
+            
+            <table>
+                <tr>
+                    <th></th>
+                    <th>Campus accommodation</th>
+                    <th>Off-campus</th>
+                </tr>
+                <tr>
+                    <td>Sports club</td>
+                    <td>${c_s}</td>
+                    <td>${not_c_s}</td>
+                </tr>
+                <tr>
+                    <td>Not in sports club</td>
+                    <td>${c_not_s}</td>
+                    <td>${not_c_not_s}</td>
+                </tr>
+            </table>
+
+            <p>(a) Find the</p>
+            <div class="sub-question">
+                <p>(i) probability that the selected student lives in campus accommodation.</p>
+                <p>(ii) probability that selected student does not participate in a sports club.</p>
+            </div>
+            
+            <p>(b) Express in words and evaluate the following probabilities</p>
+            <div class="sub-question" style="display: flex; gap: 40px; margin-bottom: 20px;">
+                <span>(i) $P(C \\cap S)$</span>
+                <span>(ii) $P(C' \\cap S')$</span>
+                <span>(iii) $P(S | C)$</span>
+            </div>
+
+            <p>(c) Determine whether the events C and S are independent. Justify your answer using probabilities.</p>
+            <p>(d) Find the probability that a student lives in campus accommodation if the student participates in sports club.</p>
+        `;
+
+        // Build Answer HTML
+        const answerHTML = `
+            <h3>Solutions:</h3>
+            <p><strong>Totals needed:</strong><br>
+            Total students = $${grand_total}$<br>
+            Total in Campus ($C$) = $${c_s} + ${c_not_s} = ${total_c}$<br>
+            Total in Sports ($S$) = $${c_s} + ${not_c_s} = ${total_s}$<br>
+            Total Not in Sports ($S'$) = $${c_not_s} + ${not_c_not_s} = ${total_not_s}$</p>
+
+            <p><strong>(a)</strong></p>
+            <div class="sub-question">
+                <p><strong>(i)</strong> $P(C) = \\frac{${total_c}}{${grand_total}} = \\mathbf{${f(p_c)}}$</p>
+                <p><strong>(ii)</strong> $P(S') = \\frac{${total_not_s}}{${grand_total}} = \\mathbf{${f(p_not_s)}}$</p>
+            </div>
+
+            <p><strong>(b)</strong></p>
+            <div class="sub-question">
+                <p><strong>(i) $P(C \\cap S)$:</strong> The probability that a selected student lives in campus accommodation <strong>and</strong> participates in a sports club.<br>
+                $P(C \\cap S) = \\frac{${c_s}}{${grand_total}} = \\mathbf{${f(p_c_and_s)}}$</p>
+                
+                <p><strong>(ii) $P(C' \\cap S')$:</strong> The probability that a selected student lives off-campus <strong>and</strong> does not participate in a sports club.<br>
+                $P(C' \\cap S') = \\frac{${not_c_not_s}}{${grand_total}} = \\mathbf{${f(p_not_c_and_not_s)}}$</p>
+                
+                <p><strong>(iii) $P(S | C)$:</strong> The probability that a student participates in a sports club <strong>given</strong> that they live in campus accommodation.<br>
+                $P(S | C) = \\frac{P(S \\cap C)}{P(C)} = \\frac{${c_s}}{${total_c}} = \\mathbf{${f(p_s_given_c)}}$</p>
+            </div>
+
+            <p><strong>(c)</strong> Independence Check:<br>
+            Two events are independent if $P(C \\cap S) = P(C) \\times P(S)$.<br>
+            $P(C \\cap S) = \\frac{${c_s}}{${grand_total}} = ${f(p_c_and_s)}$<br>
+            $P(C) \\times P(S) = \\left(\\frac{${total_c}}{${grand_total}}\\right) \\times \\left(\\frac{${total_s}}{${grand_total}}\\right) = ${f(p_c)} \\times ${f(p_s)} = ${f(p_c_times_p_s)}$<br>
+            Since $${f(p_c_and_s)} ${isIndependent ? '=' : '\\neq'} ${f(p_c_times_p_s)}$, the events $C$ and $S$ are <strong>${isIndependent ? 'independent' : 'not independent'}</strong>.</p>
+
+            <p><strong>(d)</strong> $P(C | S)$ (Probability of living in Campus accommodation given participation in a Sports club):<br>
+            $P(C | S) = \\frac{n(C \\cap S)}{n(S)} = \\frac{${c_s}}{${total_s}} = \\mathbf{${f(p_c_given_s)}}$</p>
+        `;
+
+        document.getElementById('question-content').innerHTML = questionHTML;
+        document.getElementById('answer-content').innerHTML = answerHTML;
+
+        // Re-render MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch((err) => console.log('MathJax error: ', err.message));
+        }
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Normal Distribution Probability Practice</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        // Initialize with default values from the image
+                        // mean=40, stdDev=6, lowerA=35.5, upperA=44.5, maxB=30.5, lessC=38
+                        renderContent(40, 6, 35.5, 44.5, 30.5, 38);
+                    });
+                }
+            }
+        };
+    </script>
+    <!-- MathJax Script (No Polyfill) -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .question-section {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        .answer-section {
+            display: none;
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #toggle-btn {
+            background-color: #3498db;
+        }
+        #toggle-btn:hover {
+            background-color: #2980b9;
+        }
+        #generate-btn {
+            background-color: #2ecc71;
+        }
+        #generate-btn:hover {
+            background-color: #27ae60;
+        }
+        .sub-question {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Normal Distribution Practice</h1>
+    
+    <div class="question-section" id="question-content">
+        <!-- Question will be injected here -->
+    </div>
+
+    <div class="controls">
+        <button id="toggle-btn" onclick="toggleAnswer()">Show Answer</button>
+        <button id="generate-btn" onclick="generateNewQuestion()">Generate New Question</button>
+    </div>
+
+    <div class="answer-section" id="answer-content">
+        <!-- Answer will be injected here -->
+    </div>
+</div>
+
+<script>
+    let isAnswerVisible = false;
+
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('answer-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        
+        isAnswerVisible = !isAnswerVisible;
+        
+        if (isAnswerVisible) {
+            answerDiv.style.display = 'block';
+            toggleBtn.textContent = 'Hide Answer';
+        } else {
+            answerDiv.style.display = 'none';
+            toggleBtn.textContent = 'Show Answer';
+        }
+    }
+
+    // Standard Normal CDF Approximation (Abramowitz and Stegun)
+    function normalCDF(x) {
+        let sign = (x < 0) ? -1 : 1;
+        x = Math.abs(x) / Math.sqrt(2.0);
+        let t = 1.0 / (1.0 + 0.3275911 * x);
+        let y = 1.0 - (((((1.061405429 * t - 1.453152027) * t) + 1.421413741) * t - 0.284496736) * t + 0.254829592) * t * Math.exp(-x * x);
+        return 0.5 * (1.0 + sign * y);
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateNewQuestion() {
+        const mean = getRandomInt(30, 60);
+        const stdDev = getRandomInt(4, 12);
+        
+        // Generate realistic variations for the questions
+        const offsetA = getRandomInt(2, 6) + 0.5;
+        const lowerA = mean - offsetA;
+        const upperA = mean + offsetA;
+        
+        const maxB = mean - getRandomInt(5, 12) + 0.5;
+        const lessC = mean - getRandomInt(1, 5);
+
+        // Hide answer section when generating a new question
+        isAnswerVisible = false;
+        document.getElementById('answer-content').style.display = 'none';
+        document.getElementById('toggle-btn').textContent = 'Show Answer';
+
+        renderContent(mean, stdDev, lowerA, upperA, maxB, lessC);
+    }
+
+    function renderContent(mean, stdDev, lowerA, upperA, maxB, lessC) {
+        // Calculations for Z-scores
+        const zLowerA = (lowerA - mean) / stdDev;
+        const zUpperA = (upperA - mean) / stdDev;
+        const zMaxB = (maxB - mean) / stdDev;
+        const zLessC = (lessC - mean) / stdDev;
+
+        // Probabilities
+        const probA = normalCDF(zUpperA) - normalCDF(zLowerA);
+        const probB = normalCDF(zMaxB);
+        const probC = normalCDF(zLessC);
+
+        // Expected days
+        const daysInYear = 365;
+        const expectedDays = Math.round(daysInYear * probC);
+
+        // Formatting helpers
+        const fProb = (p) => p.toFixed(4);
+        const fZ = (z) => z.toFixed(3);
+
+        // Build Question HTML
+        const questionHTML = `
+            <p>5. An online retailer monitors the time taken to process customer orders. The processing times are normally distributed with a mean of ${mean} minutes and a standard deviation of ${stdDev} minutes.</p>
+            <p>Assume one order is selected at random each day and there are 365 days in a year.</p>
+            
+            <div class="sub-question">
+                <p>(a) Find the probability that the processing time is between ${lowerA} minutes and ${upperA} minutes</p>
+                <p>(b) Find the probability that the processing time is no greater than ${maxB} minutes</p>
+                <p>(c) Find the number of days during the year that the processing time is less than ${lessC} minutes.</p>
+            </div>
+        `;
+
+        // Build Answer HTML
+        const answerHTML = `
+            <h3>Solutions:</h3>
+            <p>Let $X$ be the processing time. We are given $X \\sim N(\\mu, \\sigma^2)$ where $\\mu = ${mean}$ and $\\sigma = ${stdDev}$.<br>
+            The standard normal variable is $Z = \\frac{X - \\mu}{\\sigma}$.</p>
+
+            <p><strong>(a)</strong> Probability between ${lowerA} and ${upperA}:<br>
+            $P(${lowerA} < X < ${upperA})$<br>
+            $= P\\left(\\frac{${lowerA} - ${mean}}{${stdDev}} < Z < \\frac{${upperA} - ${mean}}{${stdDev}}\\right)$<br>
+            $= P(${fZ(zLowerA)} < Z < ${fZ(zUpperA)})$<br>
+            $= P(Z < ${fZ(zUpperA)}) - P(Z < ${fZ(zLowerA)})$<br>
+            $\\approx ${fProb(normalCDF(zUpperA))} - ${fProb(normalCDF(zLowerA))} = \\mathbf{${fProb(probA)}}$</p>
+
+            <p><strong>(b)</strong> Probability no greater than ${maxB}:<br>
+            $P(X \\le ${maxB})$<br>
+            $= P\\left(Z \\le \\frac{${maxB} - ${mean}}{${stdDev}}\\right)$<br>
+            $= P(Z \\le ${fZ(zMaxB)})$<br>
+            $= \\mathbf{${fProb(probB)}}$</p>
+
+            <p><strong>(c)</strong> Number of days processing time is less than ${lessC} minutes:<br>
+            First, find the probability $P(X < ${lessC})$:<br>
+            $P(X < ${lessC}) = P\\left(Z < \\frac{${lessC} - ${mean}}{${stdDev}}\\right)$<br>
+            $= P(Z < ${fZ(zLessC)}) \\approx ${fProb(probC)}$<br><br>
+            Next, multiply by the number of days in a year:<br>
+            $\\text{Expected Days} = 365 \\times P(X < ${lessC})$<br>
+            $\\text{Expected Days} = 365 \\times ${fProb(probC)} \\approx ${daysInYear * probC}$<br>
+            $\\text{Expected Days} \\approx \\mathbf{${expectedDays}\\text{ days}}$ (rounded to nearest whole day)</p>
+        `;
+
+        document.getElementById('question-content').innerHTML = questionHTML;
+        document.getElementById('answer-content').innerHTML = answerHTML;
+
+        // Re-render MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch((err) => console.log('MathJax error: ', err.message));
+        }
+    }
+</script>
+
+</body>
+</html>

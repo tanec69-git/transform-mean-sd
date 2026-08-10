@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discrete Probability Distribution Generator</title>
+    
+    <!-- MathJax Configuration -->
+    <script>
+        MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                pageReady: () => {
+                    return MathJax.startup.defaultPageReady().then(() => {
+                        // Initialize with default values from the image
+                        // c0=1, c1=1, c2=4, c3=2, c4=1, shoppers=5000
+                        renderContent(1, 1, 4, 2, 1, 5000);
+                    });
+                }
+            }
+        };
+    </script>
+    <!-- MathJax Script (No Polyfill) -->
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h1 {
+            font-size: 1.5em;
+            color: #2c3e50;
+            border-bottom: 2px solid #ecf0f1;
+            padding-bottom: 10px;
+        }
+        .question-section {
+            margin-bottom: 20px;
+            font-size: 1.1em;
+        }
+        table {
+            border-collapse: collapse;
+            width: 90%;
+            margin: 20px auto;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+        }
+        .answer-section {
+            display: none;
+            background-color: #e8f4f8;
+            padding: 20px;
+            border-left: 5px solid #3498db;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 15px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        #toggle-btn {
+            background-color: #3498db;
+        }
+        #toggle-btn:hover {
+            background-color: #2980b9;
+        }
+        #generate-btn {
+            background-color: #2ecc71;
+        }
+        #generate-btn:hover {
+            background-color: #27ae60;
+        }
+        .sub-question {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        .sub-sub-question {
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Discrete Probability Distribution Practice</h1>
+    
+    <div class="question-section" id="question-content">
+        <!-- Question will be injected here -->
+    </div>
+
+    <div class="controls">
+        <button id="toggle-btn" onclick="toggleAnswer()">Show Answer</button>
+        <button id="generate-btn" onclick="generateNewQuestion()">Generate New Question</button>
+    </div>
+
+    <div class="answer-section" id="answer-content">
+        <!-- Answer will be injected here -->
+    </div>
+</div>
+
+<script>
+    let isAnswerVisible = false;
+
+    function toggleAnswer() {
+        const answerDiv = document.getElementById('answer-content');
+        const toggleBtn = document.getElementById('toggle-btn');
+        
+        isAnswerVisible = !isAnswerVisible;
+        
+        if (isAnswerVisible) {
+            answerDiv.style.display = 'block';
+            toggleBtn.textContent = 'Hide Answer';
+        } else {
+            answerDiv.style.display = 'none';
+            toggleBtn.textContent = 'Show Answer';
+        }
+    }
+
+    function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function formatCoef(c) {
+        return c === 1 ? 'p' : c + 'p';
+    }
+
+    function generateNewQuestion() {
+        // Generate random coefficients between 1 and 6 for probabilities
+        const c0 = getRandomInt(1, 4);
+        const c1 = getRandomInt(1, 5);
+        const c2 = getRandomInt(1, 6);
+        const c3 = getRandomInt(1, 5);
+        const c4 = getRandomInt(1, 4);
+        
+        // Randomize number of shoppers
+        const shoppers = getRandomInt(10, 100) * 100;
+
+        // Hide answer section when generating a new question
+        isAnswerVisible = false;
+        document.getElementById('answer-content').style.display = 'none';
+        document.getElementById('toggle-btn').textContent = 'Show Answer';
+
+        renderContent(c0, c1, c2, c3, c4, shoppers);
+    }
+
+    function renderContent(c0, c1, c2, c3, c4, shoppers) {
+        const sum_c = c0 + c1 + c2 + c3 + c4;
+        
+        // Calculations for expectations
+        const ex_c = 0*c0 + 1*c1 + 2*c2 + 3*c3 + 4*c4;
+        const ex2_c = 0*c0 + 1*c1 + 4*c2 + 9*c3 + 16*c4;
+        
+        const sum_f2 = c0 + c1; // fewer than 2 (x=0, 1)
+        const sum_ge3 = c3 + c4; // at least 3 (x=3, 4)
+
+        // Decimal versions for display
+        const p_val = 1 / sum_c;
+        const p_f2_val = sum_f2 / sum_c;
+        const p_ge3_val = sum_ge3 / sum_c;
+        const ex_val = ex_c / sum_c;
+        const ex2_val = ex2_c / sum_c;
+        const var_val = ex2_val - Math.pow(ex_val, 2);
+        const total_est_val = shoppers * ex_val;
+
+        // Formatted fraction helper
+        const f = (num, den) => `\\frac{${num}}{${den}}`;
+
+        // Build Question HTML
+        const questionHTML = `
+            <p>4. In celebration of National Day holiday, a shopping mall conducts a lucky draw promotion. A randomly selected shopper may receive a certain number of shopping vouchers.</p>
+            
+            <table>
+                <tr>
+                    <td>Number of vouchers, $x$</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td>2</td>
+                    <td>3</td>
+                    <td>4</td>
+                </tr>
+                <tr>
+                    <td>$P(X=x)$</td>
+                    <td>${formatCoef(c0)}</td>
+                    <td>${formatCoef(c1)}</td>
+                    <td>${formatCoef(c2)}</td>
+                    <td>${formatCoef(c3)}</td>
+                    <td>${formatCoef(c4)}</td>
+                </tr>
+            </table>
+
+            <div class="sub-question">
+                <p>(a) Find the value of $p$.</p>
+                <p>(b) Find the probability that a shopper receives</p>
+                <div class="sub-sub-question">
+                    <p>(i) fewer than 2 vouchers</p>
+                    <p>(ii) at least 3 vouchers</p>
+                </div>
+                <p>(c) Find the expected number of vouchers received by a shopper.</p>
+                <p>(d) Find $E(X^2)$ and $Var(X)$</p>
+                <p>(e) During the National Day holiday, ${shoppers} shoppers participate in the lucky draw. Estimate the total number of vouchers expected to be distributed.</p>
+            </div>
+        `;
+
+        // Build Answer HTML
+        const answerHTML = `
+            <h3>Solutions:</h3>
+            
+            <p><strong>(a)</strong> The sum of all probabilities must equal 1.<br>
+            $\\sum P(X=x) = 1$<br>
+            $${formatCoef(c0)} + ${formatCoef(c1)} + ${formatCoef(c2)} + ${formatCoef(c3)} + ${formatCoef(c4)} = 1$<br>
+            $${sum_c}p = 1$<br>
+            <strong>$p = ${f(1, sum_c)}$</strong> $\\approx ${p_val.toFixed(4)}$</p>
+
+            <p><strong>(b)</strong><br>
+            <strong>(i)</strong> Probability of fewer than 2 vouchers ($X < 2$):<br>
+            $P(X < 2) = P(X=0) + P(X=1) = ${formatCoef(c0)} + ${formatCoef(c1)} = ${sum_f2}p$<br>
+            $P(X < 2) = ${sum_f2} \\left( ${f(1, sum_c)} \\right) = \\mathbf{${f(sum_f2, sum_c)}}$ $\\approx ${p_f2_val.toFixed(4)}$</p>
+            
+            <p><strong>(ii)</strong> Probability of at least 3 vouchers ($X \\ge 3$):<br>
+            $P(X \\ge 3) = P(X=3) + P(X=4) = ${formatCoef(c3)} + ${formatCoef(c4)} = ${sum_ge3}p$<br>
+            $P(X \\ge 3) = ${sum_ge3} \\left( ${f(1, sum_c)} \\right) = \\mathbf{${f(sum_ge3, sum_c)}}$ $\\approx ${p_ge3_val.toFixed(4)}$</p>
+
+            <p><strong>(c)</strong> Expected number of vouchers $E(X)$:<br>
+            $E(X) = \\sum x \\cdot P(X=x)$<br>
+            $E(X) = 0(${formatCoef(c0)}) + 1(${formatCoef(c1)}) + 2(${formatCoef(c2)}) + 3(${formatCoef(c3)}) + 4(${formatCoef(c4)})$<br>
+            $E(X) = 0 + ${c1}p + ${c2*2}p + ${c3*3}p + ${c4*4}p = ${ex_c}p$<br>
+            $E(X) = \\mathbf{${f(ex_c, sum_c)}}$ $\\approx ${ex_val.toFixed(4)}$</p>
+
+            <p><strong>(d)</strong> $E(X^2)$ and $Var(X)$:<br>
+            $E(X^2) = \\sum x^2 \\cdot P(X=x)$<br>
+            $E(X^2) = 0^2(${formatCoef(c0)}) + 1^2(${formatCoef(c1)}) + 2^2(${formatCoef(c2)}) + 3^2(${formatCoef(c3)}) + 4^2(${formatCoef(c4)})$<br>
+            $E(X^2) = 0 + 1(${c1}p) + 4(${c2}p) + 9(${c3}p) + 16(${c4}p) = ${ex2_c}p$<br>
+            <strong>$E(X^2) = ${f(ex2_c, sum_c)}$</strong> $\\approx ${ex2_val.toFixed(4)}$<br><br>
+            
+            $Var(X) = E(X^2) - [E(X)]^2$<br>
+            $Var(X) = ${f(ex2_c, sum_c)} - \\left( ${f(ex_c, sum_c)} \\right)^2$<br>
+            $Var(X) = ${f(ex2_c, sum_c)} - ${f(ex_c * ex_c, sum_c * sum_c)} = \\frac{${ex2_c * sum_c} - ${ex_c * ex_c}}{${sum_c * sum_c}}$<br>
+            <strong>$Var(X) = \\mathbf{${f(ex2_c * sum_c - ex_c * ex_c, sum_c * sum_c)}}$</strong> $\\approx ${var_val.toFixed(4)}$</p>
+
+            <p><strong>(e)</strong> Expected total vouchers for ${shoppers} shoppers:<br>
+            $\\text{Total Expected} = N \\times E(X)$<br>
+            $\\text{Total Expected} = ${shoppers} \\times ${f(ex_c, sum_c)}$<br>
+            $\\text{Total Expected} = \\mathbf{${total_est_val.toFixed(2)}}$ vouchers</p>
+        `;
+
+        document.getElementById('question-content').innerHTML = questionHTML;
+        document.getElementById('answer-content').innerHTML = answerHTML;
+
+        // Re-render MathJax
+        if (window.MathJax && MathJax.typesetPromise) {
+            MathJax.typesetPromise().catch((err) => console.log('MathJax error: ', err.message));
+        }
+    }
+</script>
+
+</body>
+</html>
